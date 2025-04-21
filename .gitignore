@@ -4,6 +4,7 @@ __pycache__/
 *.egg
 *.egg-info/
 .env
+!.env.production
 venv/
 build/
 dist/
@@ -24,6 +25,7 @@ yarn-error.log*
 frontend/build/
 frontend/.env
 frontend/.env.*
+!frontend/.env.production
 
 # OS/system
 .DS_Store
