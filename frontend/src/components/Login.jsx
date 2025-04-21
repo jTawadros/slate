@@ -31,10 +31,10 @@ export default function App() {
         }`}
       >
         <nav className="space-y-2">
-          <a href="/login" className="block text-sm hover:text-white">
+          <a href="#" className="block text-sm hover:text-white">
             Login
           </a>
-          <a href="/signup" className="block text-sm hover:text-white">
+          <a href="#" className="block text-sm hover:text-white">
             Sign Up
           </a>
           <a href="#" className="block text-sm hover:text-white">
@@ -128,3 +128,4 @@ export default function App() {
     </div>
   );
 }
+
