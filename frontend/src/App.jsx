@@ -5,6 +5,11 @@ export default function App() {
   const [notes, setNotes] = useState("");
   const [summary, setSummary] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const handleClear = () => {
+    setNotes("");
+    setSummary("");
+  };
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
@@ -46,7 +51,7 @@ export default function App() {
             Generate Clean Reports
           </h2>
           <p className="mt-2 text-gray-400 text-sm">
-            Paste in your messy notes — we’ll handle the formatting.
+            Paste in your messy notes - We'll do the rest.
           </p>
         </section>
 
@@ -90,7 +95,14 @@ export default function App() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-medium transition"
           >
-            Generate Report
+            Generate Summary Report
+          </button>
+          <button
+            type="button"
+            onClick={handleClear}
+            className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-md font-medium transition mt-2"
+          >
+            New Prompt
           </button>
         </form>
 
