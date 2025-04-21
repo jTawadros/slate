@@ -5,9 +5,11 @@ import Layout from "./Layout";
 import App from "./App";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
+import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
+    <Toaster position="top-center" />
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<App />} />

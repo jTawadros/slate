@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { toast } from "react-hot-toast";
+
 
 export default function Signup() {
   const [email, setEmail] = useState("");
@@ -13,7 +16,8 @@ export default function Signup() {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      alert("Signup successful!");
+      toast.success("Signup and Login successful ✔");
+      navigate("/");
     } catch (err) {
       setError(err.message);
     }
