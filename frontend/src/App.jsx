@@ -32,14 +32,21 @@ export default function App() {
       >
         <nav className="space-y-2">
           <a href="#" className="block text-sm hover:text-white">
-            Dashboard
+            Login
+          </a>
+          <a href="#" className="block text-sm hover:text-white">
+            Sign Up
+          </a>
+          <a href="#" className="block text-sm hover:text-white">
+            Logout
           </a>
           <a href="#" className="block text-sm hover:text-white">
             Settings
           </a>
           <a href="#" className="block text-sm hover:text-white">
-            Logout
+            About
           </a>
+
         </nav>
       </div>
 
