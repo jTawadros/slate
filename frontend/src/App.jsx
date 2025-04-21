@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./index.css";
 
 export default function App() {
@@ -31,12 +32,8 @@ export default function App() {
         }`}
       >
         <nav className="space-y-2">
-          <a href="/login" className="block text-sm hover:text-white">
-            Login
-          </a>
-          <a href="/signup" className="block text-sm hover:text-white">
-            Sign Up
-          </a>
+          <Link to="/login" className="block text-sm hover:text-white">Login</Link>
+          <Link to="/signup" className="block text-sm hover:text-white">Sign Up</Link>
           <a href="#" className="block text-sm hover:text-white">
             Logout
           </a>
