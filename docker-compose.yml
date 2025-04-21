@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  slate-backend:
+    build: ./backend
+    container_name: slate-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  slate-frontend:
+    build: ./frontend
+    container_name: slate-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - slate-backend
+    restart: unless-stopped
+

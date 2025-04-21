@@ -52,9 +52,26 @@ export default function App() {
 
         {/* Form */}
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            setSummary(`Generated summary from: ${notes}`);
+            setSummary("Generating...");
+
+            try {
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/api/generate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  notes: notes,
+                  report_type: "General Summary",
+                }),
+              });
+
+              const data = await res.json();
+              setSummary(data.summary);
+            } catch (err) {
+              console.error(err);
+              setSummary("Error generating summary.");
+            }
           }}
           className="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 space-y-4"
         >
