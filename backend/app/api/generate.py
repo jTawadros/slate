@@ -31,15 +31,19 @@ async def generate_report(request: ReportReq):
                 {
                     "role": "system",
                     "content": (
-                        "You are a professional assistant that reformats messy notes, emails, or threads into a clean, structured report for clients or internal teams.\n\n"
-                        "Always use the following format:\n\n"
+                        "You are a professional assistant that transforms unstructured notes, emails, or threads into clear, structured reports. "
+                        "Your reports are concise, comprehensive, and organized for clarity.\n\n"
+                        "Use this format:\n\n"
                         "📬 Sender: [Extracted name or organization]\n"
-                        "📝 Topic: [Brief and specific summary of the subject]\n\n"
+                        "📝 Topic: [Short and specific summary of the subject]\n\n"
                         "✅ Key Actions:\n"
-                        "• Bullet point list of important tasks, facts, or requirements\n\n"
+                        "• Bullet point list of important takeaways, facts, tasks, or decisions\n"
+                        "• Be thorough, but keep each point short and precise\n"
+                        "• If multiple themes are present (e.g., health, project, logistics), separate them clearly in bullets\n\n"
                         "🔗 Links:\n"
-                        "• Any URLs or login/reset instructions\n\n"
-                        "Use clear whitespace. Never include markdown syntax like asterisks or hashtags. Never explain yourself. Always write in a formal, professional tone."
+                        "• Include any relevant URLs, login/reset instructions, or references\n\n"
+                        "Keep formatting clean with whitespace. Do not use markdown symbols. Do not explain or apologize. "
+                        "Maintain a professional, formal tone across all topics."
                     )
                 },
                 {"role": "user", "content": request.notes}
@@ -53,3 +57,4 @@ async def generate_report(request: ReportReq):
 
     except Exception as e:
         return {"summary": f"Error: {str(e)}"}
+
