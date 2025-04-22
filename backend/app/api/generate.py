@@ -15,6 +15,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 class ReportReq(BaseModel):
     notes: str
     report_type: Optional[str] = "General Summary"
+    summary_length: Optional[str] = "Medium"
 
 
 @router.options("/generate")
@@ -25,12 +26,19 @@ async def handle_preflight():
 @router.post("/generate")
 async def generate_report(request: ReportReq):
     try:
+        length_instruction = {
+            "Short": "Summarize briefly in 2-3 sentences.",
+            "Medium": "Summarize with moderate detail (around 5 bullets).",
+            "Long": "Include as much detail as possible in 8+ bullets."
+        }.get(request.summary_length, "Summarize with moderate detail.")
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
                     "role": "system",
+
                     "content": (
+                        f"{length_instruction}\n\n"
                         "You are a professional assistant that transforms unstructured notes, emails, or threads into clear, structured reports. "
                         "Your reports are concise, comprehensive, and organized for clarity.\n\n"
                         "Use this format:\n\n"

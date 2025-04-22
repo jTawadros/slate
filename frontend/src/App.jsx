@@ -3,6 +3,7 @@ import { useState } from "react";
 export default function App() {
   const [notes, setNotes] = useState("");
   const [summary, setSummary] = useState("");
+  const [summaryLength, setSummaryLength] = useState("Medium");
 
   const handleClear = () => {
     setNotes("");
@@ -25,6 +26,29 @@ export default function App() {
         </p>
       </section>
 
+      {/* Set Verbosity Length */}
+      <div className="text-center mb-6">
+        <p className="text-sm text-gray-400 mb-2">Select summary length:</p>
+        <div className="flex justify-center space-x-4">
+          {["Short", "Medium", "Long"].map((level) => (
+            <button
+              key={level}
+              onClick={() => setSummaryLength(level)}
+              type="button"
+              className={`px-4 py-2 rounded-full border transition-all duration-300 
+                ${
+                  summaryLength === level
+                    ? "bg-blue-600 text-white border-blue-400 shadow-lg animate-pulse"
+                    : "bg-gray-800 text-gray-300 border-gray-600 hover:border-blue-500 hover:text-white"
+                }`}
+            >
+              {level}
+            </button>
+          ))}
+        </div>
+      </div>
+
+
       {/* Form Section */}
       <form
         onSubmit={async (e) => {
@@ -35,7 +59,7 @@ export default function App() {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/generate`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ notes, report_type: "General Summary" }),
+              body: JSON.stringify({ notes, report_type: "General Summary", summary_length: summaryLength, }),
             });
 
             const data = await res.json();
