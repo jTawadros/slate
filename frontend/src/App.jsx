@@ -98,7 +98,7 @@ export default function App() {
             onClick={handleClear}
             className="relative w-full sm:w-auto px-6 py-2 rounded-full bg-gray-700 text-white font-medium 
                        transition-transform duration-200 transform hover:scale-105
-                       before:absolute before:inset-0 before:rounded-full before:border-2 before:border-gray-400 
+                       before:content-[''] before:absolute before:inset-0 before:rounded-full before:border-2 before:border-gray-400 
                        before:opacity-0 before:transition-all before:duration-500 hover:before:opacity-100 
                        hover:before:animate-trace overflow-hidden z-10"
           >
