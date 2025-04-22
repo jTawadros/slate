@@ -36,7 +36,7 @@ async def generate_report(request: ReportReq):
                         "Use this format:\n\n"
                         "📬 Sender: [Extracted name or organization]\n"
                         "📝 Topic: [Short and specific summary of the subject]\n\n"
-                        "✅ Key Actions:\n"
+                        "🧠 Key Points:\n"
                         "• Bullet point list of important takeaways, facts, tasks, or decisions\n"
                         "• Be thorough, but keep each point short and precise\n"
                         "• If multiple themes are present (e.g., health, project, logistics), separate them clearly in bullets\n\n"
