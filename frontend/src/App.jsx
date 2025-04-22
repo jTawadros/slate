@@ -13,7 +13,7 @@ export default function App() {
   return (
     <>
       {/* Animated Background Blob */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-gradient-to-r from-blue-600 to-purple-600 rounded-full filter blur-3xl opacity-20 animate-pulse z-0" />
+      <div className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[40rem] h-[40rem] bg-gradient-to-r from-blue-600 to-purple-600 rounded-full filter blur-3xl opacity-20 animate-pulse z-0" />
 
       {/* Hero Section */}
       <section className="text-center space-y-4 relative z-10 pt-16 pb-10 animate-fade-in-up">
