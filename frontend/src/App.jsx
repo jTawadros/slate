@@ -11,9 +11,11 @@ export default function App() {
 
   return (
     <>
-      <section className="text-center">
-        <h2 className="text-4xl font-extrabold text-white">Summarize Anything in Seconds</h2>
-        <p className="mt-2 text-gray-400 text-sm max-w-xl mx-auto">
+      <section className="text-center space-y-4">
+        <h2 className="text-4xl font-extrabold text-white">
+          Summarize Anything in Seconds
+        </h2>
+        <p className="mt-2 text-gray-400 text-base max-w-2xl mx-auto">
           SlateWorks uses AI to turn messy notes, emails, and case logs into clear, professional summaries.
           Perfect for students, healthcare workers, and busy professionals who need fast, structured reports.
         </p>
