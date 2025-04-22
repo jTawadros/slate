@@ -48,7 +48,6 @@ export default function App() {
         </div>
       </div>
 
-
       {/* Form Section */}
       <form
         onSubmit={async (e) => {
@@ -107,6 +106,8 @@ export default function App() {
           </button>
         </div>
       </form>
+
+      
 
       {/* Summary Preview */}
       {summary && (
