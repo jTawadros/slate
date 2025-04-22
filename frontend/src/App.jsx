@@ -59,7 +59,7 @@ export default function App() {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/generate`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ notes, report_type: "General Summary", summary_length: summaryLength, }),
+              body: JSON.stringify({ notes, report_type: "General Summary", summary_length: summaryLength }),
             });
 
             const data = await res.json();
@@ -82,19 +82,30 @@ export default function App() {
           />
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-medium transition transform hover:scale-105"
-        >
-          Generate Summary Report
-        </button>
-        <button
-          type="button"
-          onClick={handleClear}
-          className="w-full bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-md font-medium transition transform hover:scale-105 mt-2"
-        >
-          New Prompt
-        </button>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
+          <button
+            type="submit"
+            className="relative w-full sm:w-auto px-6 py-2 rounded-full bg-blue-600 text-white font-medium 
+                       transition-transform duration-200 transform hover:scale-105
+                       before:absolute before:inset-0 before:rounded-full before:border-2 before:border-blue-400 
+                       before:opacity-0 before:transition-all before:duration-500 hover:before:opacity-100 
+                       hover:before:animate-trace overflow-hidden z-10"
+          >
+            Generate Summary
+          </button>
+
+          <button
+            type="button"
+            onClick={handleClear}
+            className="relative w-full sm:w-auto px-6 py-2 rounded-full bg-gray-700 text-white font-medium 
+                       transition-transform duration-200 transform hover:scale-105
+                       before:absolute before:inset-0 before:rounded-full before:border-2 before:border-gray-400 
+                       before:opacity-0 before:transition-all before:duration-500 hover:before:opacity-100 
+                       hover:before:animate-trace overflow-hidden z-10"
+          >
+            New Prompt
+          </button>
+        </div>
       </form>
 
       {/* Summary Preview */}
