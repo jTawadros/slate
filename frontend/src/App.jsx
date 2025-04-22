@@ -12,11 +12,13 @@ export default function App() {
   return (
     <>
       <section className="text-center">
-        <h2 className="text-4xl font-extrabold text-white">Generate Clean Reports</h2>
-        <p className="mt-2 text-gray-400 text-sm">
-          Paste in your messy notes - We'll do the rest.
+        <h2 className="text-4xl font-extrabold text-white">Summarize Anything in Seconds</h2>
+        <p className="mt-2 text-gray-400 text-sm max-w-xl mx-auto">
+          SlateWorks uses AI to turn messy notes, emails, and case logs into clear, professional summaries.
+          Perfect for students, healthcare workers, and busy professionals who need fast, structured reports.
         </p>
       </section>
+
 
       <form
         onSubmit={async (e) => {
