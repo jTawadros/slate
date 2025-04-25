@@ -1,3 +1,4 @@
+// src/components/Account.jsx – polished full‑file version (copy‑paste ready)
 import { useState, useEffect, useRef } from "react";
 import {
   updateProfile,
@@ -20,6 +21,7 @@ export default function Account() {
   const [alert, setAlert] = useState({ type: "", msg: "" });
   const sidebarRef = useRef(null);
 
+  /* ─────────────────────────── Fetch user ─────────────────────────── */
   useEffect(() => {
     if (auth.currentUser) {
       const u = auth.currentUser;
@@ -30,6 +32,7 @@ export default function Account() {
     }
   }, []);
 
+  /* ───────────────────────────── Utils ─────────────────────────────── */
   const flash = (msg, type = "success", timeout = 3500) => {
     setAlert({ type, msg });
     if (timeout) setTimeout(() => setAlert({ type: "", msg: "" }), timeout);
@@ -46,7 +49,7 @@ export default function Account() {
     }
   };
 
-  /* ─────────────────────────── Update handlers ────────────────────────── */
+  /* ─────────────────────────── Update handlers ─────────────────────── */
   const handleUpdateDisplayName = async () => {
     try {
       await updateProfile(user, { displayName });
@@ -61,7 +64,7 @@ export default function Account() {
       await updateProfile(user, { photoURL });
       flash("Profile photo updated ✔");
     } catch {
-      flash("Error updating photo", "error");
+      flash("Error updating profile photo", "error");
     }
   };
 
@@ -80,6 +83,8 @@ export default function Account() {
     try {
       await updatePassword(user, newPassword);
       flash("Password updated ✔");
+      setNewPassword("");
+      setCurrentPassword("");
     } catch {
       flash("Error updating password", "error");
     }
@@ -96,7 +101,7 @@ export default function Account() {
   /* ───────────────────────────── Layout ─────────────────────────────── */
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
-      {/* ───────── Sidebar ───────── */}
+      {/* ─── Sidebar */}
       <aside
         ref={sidebarRef}
         className="w-72 shrink-0 border-r border-gray-800/60 bg-gray-900/50 backdrop-blur-md text-gray-200 pt-8 pb-12 px-6 flex flex-col"
@@ -129,10 +134,10 @@ export default function Account() {
         </div>
       </aside>
 
-      {/* ───────── Main content ───────── */}
+      {/* ─── Main */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-5xl mx-auto py-12 px-6 sm:px-10">
-          {/* Toast‑style alert */}
+          {/* Toast */}
           {alert.msg && (
             <div
               className={`mb-6 rounded-md px-4 py-3 text-sm font-medium ${
@@ -145,12 +150,12 @@ export default function Account() {
             </div>
           )}
 
-          {/* Tabs */}
+          {/* ─── Account Info */}
           {activeTab === "Account Info" && (
             <section className="space-y-8">
               <h1 className="text-3xl font-semibold text-white mb-4">Account Information</h1>
 
-              {/* Avatar & photo URL */}
+              {/* Avatar */}
               <div className="flex gap-6 flex-col sm:flex-row items-start sm:items-center">
                 <img
                   src={
@@ -208,44 +213,53 @@ export default function Account() {
                   className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
                 />
               </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">New Password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
-                />
-              </div>
             </section>
           )}
 
+          {/* ─── Account Settings */}
           {activeTab === "Account Settings" && (
             <section>
               <h1 className="text-3xl font-semibold text-white mb-4">Account Settings</h1>
-              <p className="text-gray-400">Dark mode, 2‑FA and notifications coming soon…</p>
+              <p className="text-gray-400">Dark mode, 2‑factor auth, and notifications coming soon…</p>
             </section>
           )}
 
+          {/* ─── Privacy Settings */}
           {activeTab === "Privacy Settings" && (
             <section className="space-y-6">
               <h1 className="text-3xl font-semibold text-white mb-4">Privacy Settings</h1>
 
               <p className="text-sm text-amber-300 mb-4">
-                🔒 Enter your current password before changing email or password.
+                🔒 Enter your current password, set a new one, then click <em>Update Password</em>.
               </p>
 
-              <input
-                type="password"
-                placeholder="Current password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full max-w-xs rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
-              />
+              <div className="grid gap-5 max-w-xs">
+                {/* Current password */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Current Password</label>
+                  <input
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                  />
+                </div>
 
-              <div className="flex flex-wrap gap-4">
+                {/* New password */}
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">New Password</label>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4 mt-2">
                 <button
                   onClick={handleUpdateEmail}
                   className="rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2 text-sm font-medium"
@@ -262,10 +276,11 @@ export default function Account() {
             </section>
           )}
 
+          {/* ─── Billing */}
           {activeTab === "Billing" && (
             <section>
               <h1 className="text-3xl font-semibold text-white mb-4">Billing</h1>
-              <p className="text-gray-400">Stripe integration arriving soon.</p>
+              <p className="text-gray-400">Stripe integration coming soon.</p>
             </section>
           )}
         </div>
