@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import {
+  updateProfile,
+  updateEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
 import { auth } from "../firebase";
-import { updateProfile, updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import { Link } from "react-router-dom";
 
 export default function Account() {
@@ -11,211 +17,258 @@ export default function Account() {
   const [newPassword, setNewPassword] = useState("");
   const [photoURL, setPhotoURL] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
-  const [error, setError] = useState("");
+  const [alert, setAlert] = useState({ type: "", msg: "" });
+  const sidebarRef = useRef(null);
 
   useEffect(() => {
     if (auth.currentUser) {
-      setUser(auth.currentUser);
-      setDisplayName(auth.currentUser.displayName || "");
-      setEmail(auth.currentUser.email || "");
-      setPhotoURL(auth.currentUser.photoURL || "");
+      const u = auth.currentUser;
+      setUser(u);
+      setDisplayName(u.displayName || "");
+      setEmail(u.email || "");
+      setPhotoURL(u.photoURL || "");
     }
   }, []);
 
-  if (!user) {
-    return (
-      <div className="text-center text-gray-400 mt-10">
-        Not logged in... How'd you get here?
-      </div>
-    );
-  }
+  const flash = (msg, type = "success", timeout = 3500) => {
+    setAlert({ type, msg });
+    if (timeout) setTimeout(() => setAlert({ type: "", msg: "" }), timeout);
+  };
 
-  const handleReauth = async () => {
-    const cred = EmailAuthProvider.credential(user.email, currentPassword);
+  const reauth = async () => {
     try {
+      const cred = EmailAuthProvider.credential(user.email, currentPassword);
       await reauthenticateWithCredential(user, cred);
       return true;
-    } catch (err) {
-      setError("Reauthentication failed. Please check your password.");
+    } catch {
+      flash("Re‑authentication failed. Check your password.", "error");
       return false;
     }
   };
 
+  /* ─────────────────────────── Update handlers ────────────────────────── */
   const handleUpdateDisplayName = async () => {
     try {
       await updateProfile(user, { displayName });
-      setError("Display name updated!");
-    } catch (err) {
-      setError("Error updating display name.");
+      flash("Display name updated ✔");
+    } catch {
+      flash("Error updating display name", "error");
     }
   };
 
   const handleUpdatePhoto = async () => {
     try {
       await updateProfile(user, { photoURL });
-      setError("Profile photo updated!");
-    } catch (err) {
-      setError("Error updating profile photo.");
+      flash("Profile photo updated ✔");
+    } catch {
+      flash("Error updating photo", "error");
     }
   };
 
   const handleUpdateEmail = async () => {
-    const ok = await handleReauth();
-    if (ok) {
-      try {
-        await updateEmail(user, email);
-        setError("Email updated!");
-      } catch (err) {
-        setError("Error updating email.");
-      }
+    if (!(await reauth())) return;
+    try {
+      await updateEmail(user, email);
+      flash("Email updated ✔");
+    } catch {
+      flash("Error updating email", "error");
     }
   };
 
   const handleUpdatePassword = async () => {
-    const ok = await handleReauth();
-    if (ok) {
-      try {
-        await updatePassword(user, newPassword);
-        setError("Password updated!");
-      } catch (err) {
-        setError("Error updating password.");
-      }
+    if (!(await reauth())) return;
+    try {
+      await updatePassword(user, newPassword);
+      flash("Password updated ✔");
+    } catch {
+      flash("Error updating password", "error");
     }
   };
 
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-400 text-lg">
+        Not logged in… how did you get here?
+      </div>
+    );
+  }
+
+  /* ───────────────────────────── Layout ─────────────────────────────── */
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 p-6 space-y-4">
-        <h2 className="text-lg font-bold mb-6">Settings</h2>
-        {["Account Info", "Account Settings", "Privacy Settings", "Billing"].map((tab) => (
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
+      {/* ───────── Sidebar ───────── */}
+      <aside
+        ref={sidebarRef}
+        className="w-72 shrink-0 border-r border-gray-800/60 bg-gray-900/50 backdrop-blur-md text-gray-200 pt-8 pb-12 px-6 flex flex-col"
+      >
+        <Link to="/" className="mb-10 text-2xl font-extrabold tracking-tight text-white">
+          Slate<span className="text-blue-500">Works</span>
+        </Link>
+
+        {[
+          "Account Info",
+          "Account Settings",
+          "Privacy Settings",
+          "Billing",
+        ].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`block w-full text-left px-4 py-2 rounded-md transition ${
-              activeTab === tab ? "bg-blue-600 text-white" : "hover:bg-gray-700"
+            className={`mb-2 w-full text-left rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-gray-800/60 ${
+              activeTab === tab ? "bg-blue-600 text-white" : "text-gray-300"
             }`}
           >
             {tab}
           </button>
         ))}
-        <Link to="/" className="block mt-10 text-sm text-gray-400 hover:text-white">← Back to Home</Link>
+
+        <div className="mt-auto pt-10 text-xs text-gray-500">
+          <Link to="/" className="hover:text-gray-300">
+            ← Back to Home
+          </Link>
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-10 space-y-6">
-        {error && <div className="bg-red-500 p-3 rounded-md">{error}</div>}
+      {/* ───────── Main content ───────── */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-5xl mx-auto py-12 px-6 sm:px-10">
+          {/* Toast‑style alert */}
+          {alert.msg && (
+            <div
+              className={`mb-6 rounded-md px-4 py-3 text-sm font-medium ${
+                alert.type === "error"
+                  ? "bg-red-600/20 text-red-300 border border-red-700/40"
+                  : "bg-emerald-600/20 text-emerald-300 border border-emerald-700/40"
+              }`}
+            >
+              {alert.msg}
+            </div>
+          )}
 
-        {activeTab === "Account Info" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Account Info</h1>
+          {/* Tabs */}
+          {activeTab === "Account Info" && (
+            <section className="space-y-8">
+              <h1 className="text-3xl font-semibold text-white mb-4">Account Information</h1>
 
-            <div className="flex items-center space-x-4">
-              <img
-                src={photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`}
-                alt="Profile"
-                className="w-20 h-20 rounded-full object-cover border-2 border-blue-400"
-              />
-              <div>
-                <input
-                  type="text"
-                  placeholder="Profile Picture URL"
-                  value={photoURL}
-                  onChange={(e) => setPhotoURL(e.target.value)}
-                  className="bg-gray-800 border border-gray-600 p-2 rounded-md text-white w-64"
+              {/* Avatar & photo URL */}
+              <div className="flex gap-6 flex-col sm:flex-row items-start sm:items-center">
+                <img
+                  src={
+                    photoURL ||
+                    `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`
+                  }
+                  alt="Avatar"
+                  className="h-24 w-24 rounded-full object-cover border-4 border-blue-500/60 shadow-lg"
                 />
-                <button
-                  onClick={handleUpdatePhoto}
-                  className="ml-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
-                >
-                  Update Photo
-                </button>
+                <div className="flex-1 space-y-3">
+                  <label className="block text-sm text-gray-400">Profile Photo URL</label>
+                  <div className="flex gap-3">
+                    <input
+                      type="url"
+                      value={photoURL}
+                      onChange={(e) => setPhotoURL(e.target.value)}
+                      className="flex-1 rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                    />
+                    <button
+                      onClick={handleUpdatePhoto}
+                      className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium"
+                    >
+                      Update
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <p className="text-gray-400 text-sm">Display Name</p>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="bg-gray-800 border border-gray-600 p-2 rounded-md w-64"
-              />
-              <button
-                onClick={handleUpdateDisplayName}
-                className="ml-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
-              >
-                Save Name
-              </button>
-            </div>
+              {/* Display name */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Display Name</label>
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="flex-1 rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                  />
+                  <button
+                    onClick={handleUpdateDisplayName}
+                    className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <p className="text-gray-400 text-sm">Email</p>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-gray-800 border border-gray-600 p-2 rounded-md w-64"
-              />
-            </div>
+              {/* Email */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <p className="text-gray-400 text-sm">Password (hidden)</p>
-              <input
-                type="password"
-                placeholder="Enter New Password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-gray-800 border border-gray-600 p-2 rounded-md w-64"
-              />
-            </div>
-          </div>
-        )}
+              {/* Password */}
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
+                />
+              </div>
+            </section>
+          )}
 
-        {activeTab === "Account Settings" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Account Settings</h1>
-            <p className="text-gray-400">Coming soon: Dark mode, 2FA, notification preferences...</p>
-          </div>
-        )}
+          {activeTab === "Account Settings" && (
+            <section>
+              <h1 className="text-3xl font-semibold text-white mb-4">Account Settings</h1>
+              <p className="text-gray-400">Dark mode, 2‑FA and notifications coming soon…</p>
+            </section>
+          )}
 
-        {activeTab === "Privacy Settings" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Privacy Settings</h1>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-400">🔒 Re-enter password below to proceed with email or password changes.</p>
+          {activeTab === "Privacy Settings" && (
+            <section className="space-y-6">
+              <h1 className="text-3xl font-semibold text-white mb-4">Privacy Settings</h1>
+
+              <p className="text-sm text-amber-300 mb-4">
+                🔒 Enter your current password before changing email or password.
+              </p>
+
               <input
                 type="password"
                 placeholder="Current password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="bg-gray-800 border border-gray-600 p-2 rounded-md w-64"
+                className="w-full max-w-xs rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
               />
 
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-4">
                 <button
                   onClick={handleUpdateEmail}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
+                  className="rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2 text-sm font-medium"
                 >
                   Update Email
                 </button>
                 <button
                   onClick={handleUpdatePassword}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
+                  className="rounded-lg bg-blue-600 hover:bg-blue-700 px-5 py-2 text-sm font-medium"
                 >
                   Update Password
                 </button>
               </div>
-            </div>
-          </div>
-        )}
+            </section>
+          )}
 
-        {activeTab === "Billing" && (
-          <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Billing</h1>
-            <p className="text-gray-400">Payment plans, subscriptions, and Stripe integration coming soon!</p>
-          </div>
-        )}
+          {activeTab === "Billing" && (
+            <section>
+              <h1 className="text-3xl font-semibold text-white mb-4">Billing</h1>
+              <p className="text-gray-400">Stripe integration arriving soon.</p>
+            </section>
+          )}
+        </div>
       </main>
     </div>
   );
