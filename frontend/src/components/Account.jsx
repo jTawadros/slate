@@ -8,5 +8,5 @@ export default function Account() {
     <div>Account Page</div>;
     
     <h1>{auth.currentUser.email}</h1>
-  )
+  );
 }
