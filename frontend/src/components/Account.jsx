@@ -12,7 +12,6 @@ export default function Account() {
       
       <p>{auth.currentUser.email}</p>
       </div>
-      <form>
         <div>
           <h2>Account Settings</h2>
           <button>Change Display Name</button>
