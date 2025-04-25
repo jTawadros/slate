@@ -11,6 +11,15 @@ export default function Account() {
     <h1>Account Page</h1>
     
     <p>{auth.currentUser.email}</p>
-    </div>
+    </div>;
+    <form>
+      <div>
+        <h2>Account Settings</h2>
+        <button>Change Display Name</button>
+        <button>Upload Profile Picture</button>
+        <button>Update Password</button>
+      </div>
+
+    </form>
   );
 }
