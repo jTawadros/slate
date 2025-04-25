@@ -10,7 +10,7 @@ export default function Account() {
     <div>
     <h1>Account Page</h1>
     
-    <p>{auth.currentUse.email}</p>
+    <p>{auth.currentUser.email}</p>
     </div>
   );
 }
