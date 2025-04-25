@@ -3,11 +3,14 @@ import { auth } from "../firebase"
 
 
 export default function Account() {
-
+  if (!auth.currentUser){
+    return <div>Not logged in... How'd you get here?</div>;
+  }
   return(
-    <div>Account Page
+    <div>
+    <h1>Account Page</h1>
     
-    <h1>{auth.currentUser.email}</h1>
+    <p>{auth.currentUse.email}</p>
     </div>
   );
 }
