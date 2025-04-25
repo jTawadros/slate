@@ -1,6 +1,6 @@
 import React from "react"
 
 
-export const Account = () => {
+export default function Account() {
   return <div>Account Page</div>;
 }
