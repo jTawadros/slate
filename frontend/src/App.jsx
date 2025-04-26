@@ -124,7 +124,7 @@ export default function App() {
             ) : (
               <span className="text-gray-400">
                 {user
-                  ? `${wordCount} words`
+                  ? `${wordCount}/♾️ words`
                   : `${wordCount}/${MAX_FREE_WORDS} words`}
               </span>
             )}
