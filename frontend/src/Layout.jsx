@@ -1,4 +1,4 @@
-// src/Layout.jsx
+// src/Layout.jsx  (original, avatar-only version)
 import { useEffect, useState, useRef } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -11,17 +11,20 @@ export default function Layout() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  /* ───────── Auth listener ───────── */
-  useEffect(() => onAuthStateChanged(auth, setUser), []);
-
-  /* ─────── Click-outside close ───── */
+  /* auth listener */
   useEffect(() => {
-    const outside = (e) =>
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
+    return unsub;
+  }, []);
+
+  /* click-outside to close dropdown */
+  useEffect(() => {
+    const close = (e) =>
       dropdownRef.current &&
       !dropdownRef.current.contains(e.target) &&
       setMenuOpen(false);
-    document.addEventListener("mousedown", outside);
-    return () => document.removeEventListener("mousedown", outside);
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
   }, []);
 
   const handleLogout = async () => {
@@ -30,7 +33,7 @@ export default function Layout() {
     navigate("/");
   };
 
-  /* ────────── Avatar logic ───────── */
+  /* avatar fallback logic */
   const avatarSrc =
     user?.photoURL ||
     `https://api.dicebear.com/7.x/initials/svg?seed=${
@@ -39,36 +42,23 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
-      {/* ─── Header ─────────────────────────────────────────────────── */}
       <header className="flex justify-between items-center px-6 py-4 border-b border-gray-700">
-        {/* Brand / Home link */}
-        <Link to="/" className="text-2xl font-bold text-white flex-shrink-0">
+        <Link to="/" className="text-2xl font-bold text-white">
           Slate
         </Link>
 
-        {/* Avatar + name wrapper */}
-        <div
-          className="relative flex items-center gap-2 flex-shrink-0"
-          ref={dropdownRef}
-        >
-          {/* Display name — show from md breakpoint up */}
-          {!!user && (
-            <span className="hidden md:block text-sm text-gray-300 truncate max-w-[8rem] whitespace-nowrap">
-              {user.displayName || user.email}
-            </span>
-          )}
-
-          {/* Avatar button */}
+        <div className="relative" ref={dropdownRef}>
+          {/* avatar button */}
           <button
             onClick={() => setMenuOpen((p) => !p)}
-            className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0
-                       focus:outline-none ring-2 ring-blue-600 ring-offset-2
-                       ring-offset-gray-900 transition-transform hover:scale-105"
+            className="w-8 h-8 rounded-full overflow-hidden focus:outline-none
+                       ring-2 ring-blue-600 ring-offset-2 ring-offset-gray-900
+                       transition-transform hover:scale-105"
           >
             <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
           </button>
 
-          {/* Dropdown menu */}
+          {/* dropdown */}
           <div
             className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 transition-opacity duration-200 ${
               menuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
@@ -131,7 +121,6 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* ─── Routed pages ──────────────────────────────────────────── */}
       <main className="max-w-4xl mx-auto p-8 space-y-16 mt-8">
         <Outlet />
       </main>
