@@ -1,4 +1,3 @@
-// src/components/Account.jsx – polished full‑file version (copy‑paste ready)
 import { useState, useEffect, useRef } from "react";
 import {
   updateProfile,
