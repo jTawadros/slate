@@ -1,31 +1,30 @@
 # Slate
 
-**Live demo → [slateworks.app](https://www.slateworks.app)**  
-No screenshots, no hype—just hit the link and play with it.
+> Stop drowning in text.  
+> Paste your notes (or that monster email thread) → get a tight summary in two clicks.
+
+**Live demo:** <https://www.slateworks.app>
 
 ---
 
-## What it does (today)
+## What It Does (right now)
 
-| Logged-in users | Guests |
-|-----------------|--------|
-| Unlimited words, unlimited summaries | 150-word limit, 5 summaries/day |
-
-* Paste notes or email chains → get a clean AI summary (OpenAI under the hood).  
-* Account panel: change display name, email, password, avatar (old avatar auto-deleted).  
-* Clean, responsive UI — Tailwind + some animated flair so it doesn’t look 1999.  
+* **Summarizer** – feeds your text to the backend (FastAPI + OpenAI) and sends back something you can actually read.
+* **Auth** – email + password via Firebase.  
+  * Change display name / email / password from the account panel.  
+  * Upload an avatar – old file is deleted from Storage so we’re not hoarding junk.
+* **Guest guard** – visitors are capped at **150 words** per request. Logged-in users aren’t capped yet.
+* **Clean UI** – React + Tailwind, dark by default, animated blob so it doesn’t look 1999.
 
 ---
 
-## Stack
+## Tech Stack
 
-| Layer   | Stuff I used |
-|---------|--------------|
-| Frontend | React 19 · Vite 6 · Tailwind 3 |
+| Layer     | Stuff I used |
+|-----------|--------------|
+| Front-end | React 19 · Vite 6 · Tailwind 3 |
 | Auth / DB | Firebase (Auth, Firestore, Storage) |
-| Summarizer | FastAPI + OpenAI (private repo, not in this tree) |
-| Hosting | Railway (Docker) |
+| Summaries | FastAPI + OpenAI (private repo, lives in `backend/`) |
+| Deploy    | Railway (Docker) |
 
-No secrets in this repo — they’re in Railway env vars.
-
----
+No secrets live in this repo – they’re injected as Railway env vars.
