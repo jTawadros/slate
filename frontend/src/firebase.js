@@ -1,8 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCwIPWFzPXhKenHMhIS-eMiN4cPbECqcVE",
@@ -14,9 +13,10 @@ const firebaseConfig = {
   measurementId: "G-RC1VCBL8XN"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const auth = getAuth(app);
+const db = getFirestore(app); 
 
-export { auth };
+export { auth, db }; 
+
