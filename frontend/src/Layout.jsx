@@ -11,19 +11,13 @@ export default function Layout() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  /* ─────────────────────────── Auth listener ─────────────────────────── */
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
-    return unsubscribe;
-  }, []);
+  /* ───────── Auth listener ───────── */
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
 
-  /* ───────────────────────── Click-outside close ─────────────────────── */
+  /* ─────── Click-outside close ───── */
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
-    };
+    const handleClickOutside = (e) =>
+      dropdownRef.current && !dropdownRef.current.contains(e.target) && setMenuOpen(false);
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -34,32 +28,33 @@ export default function Layout() {
     navigate("/");
   };
 
-  /* ─────────────────────────── Avatar source ─────────────────────────── */
+  /* ────────── Avatar logic ───────── */
   const avatarSrc =
     user?.photoURL ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${
-      user?.email ?? "U"
-    }&backgroundColor=083344,0f766e&textColor=ffffff`;
+    `https://api.dicebear.com/7.x/initials/svg?seed=${user?.email ?? "U"}&backgroundColor=083344,0f766e&textColor=ffffff`;
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 font-sans">
-      {/* ─── Header ─────────────────────────────────────────────────────── */}
       <header className="flex justify-between items-center px-6 py-4 border-b border-gray-700">
         <Link to="/" className="text-2xl font-bold text-white">
           Slate
         </Link>
 
-        <div className="relative" ref={dropdownRef}>
+        {/* Avatar + name wrapper */}
+        <div className="relative flex items-center gap-2" ref={dropdownRef}>
+          {/* Display name (hidden on xs) */}
+          {!!user && (
+            <span className="hidden sm:block text-sm text-gray-300 truncate max-w-[10rem]">
+              {user.displayName || user.email}
+            </span>
+          )}
+
           {/* Avatar button */}
           <button
             onClick={() => setMenuOpen((prev) => !prev)}
             className="w-8 h-8 rounded-full overflow-hidden focus:outline-none ring-2 ring-blue-600 ring-offset-2 ring-offset-gray-900 transition-transform hover:scale-105"
           >
-            <img
-              src={avatarSrc}
-              alt="User avatar"
-              className="w-full h-full object-cover"
-            />
+            <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
           </button>
 
           {/* Dropdown */}
@@ -125,7 +120,7 @@ export default function Layout() {
         </div>
       </header>
 
-      {/* ─── Routed pages ──────────────────────────────────────────────── */}
+      {/* Routed pages */}
       <main className="max-w-4xl mx-auto p-8 space-y-16 mt-8">
         <Outlet />
       </main>
