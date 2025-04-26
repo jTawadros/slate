@@ -28,3 +28,7 @@
 | Deploy    | Railway (Docker) |
 
 No secrets live in this repo – they’re injected as Railway env vars.
+
+## Contributing
+* **Open a PR**
+  * If it doesn't break the build or leak keys, I'll probably merge it.
