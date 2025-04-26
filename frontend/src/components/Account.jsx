@@ -8,24 +8,29 @@ import {
 } from "firebase/auth";
 import { auth } from "../firebase";
 import { storage } from "../firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { Link } from "react-router-dom";
 
 export default function Account() {
-  const [user, setUser]              = useState(null);
-  const [activeTab, setActiveTab]    = useState("Account Info");
+  const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState("Account Info");
 
   const [displayName, setDisplayName] = useState("");
-  const [email, setEmail]             = useState("");
+  const [email, setEmail] = useState("");
 
   // password + privacy
-  const [newPassword, setNewPassword]       = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
 
   // avatar handling
-  const [photoURL, setPhotoURL]         = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);   // local File
-  const [previewURL, setPreviewURL]     = useState("");     // object URL
+  const [photoURL, setPhotoURL] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null); // local File
+  const [previewURL, setPreviewURL] = useState(""); // object URL
 
   const [alert, setAlert] = useState({ type: "", msg: "" });
   const sidebarRef = useRef(null);
@@ -72,9 +77,16 @@ export default function Account() {
     if (!selectedFile) return;
     const storageRef = ref(
       storage,
-      `profilePictures/${user.uid}/${Date.now()}-${selectedFile.name}`
+      `profilePictures/${user.uid}/${Date.now()}-${selectedFile.name}`,
     );
-
+    // delete the previous picture, if one exists
+    if (user.photoURL) {
+      try {
+        await deleteObject(ref(storage, user.photoURL)); // ← the single line that does the work
+      } catch (err) {
+        console.warn("Couldn’t delete old photo:", err.code);
+      }
+    }
     try {
       await uploadBytes(storageRef, selectedFile);
       const downloadURL = await getDownloadURL(storageRef);
@@ -130,7 +142,9 @@ export default function Account() {
   }
 
   const avatarSrc =
-    previewURL || photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
+    previewURL ||
+    photoURL ||
+    `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
@@ -146,19 +160,22 @@ export default function Account() {
           Slate<span className="text-blue-500">Works</span>
         </Link>
 
-        {["Account Info", "Account Settings", "Privacy Settings", "Billing"].map(
-          (tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`mb-2 w-full text-left rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-gray-800/60 ${
-                activeTab === tab ? "bg-blue-600 text-white" : "text-gray-300"
-              }`}
-            >
-              {tab}
-            </button>
-          )
-        )}
+        {[
+          "Account Info",
+          "Account Settings",
+          "Privacy Settings",
+          "Billing",
+        ].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`mb-2 w-full text-left rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-gray-800/60 ${
+              activeTab === tab ? "bg-blue-600 text-white" : "text-gray-300"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
 
         <div className="mt-auto pt-10 text-xs text-gray-500">
           <Link to="/" className="hover:text-gray-300">
@@ -342,4 +359,3 @@ export default function Account() {
     </div>
   );
 }
-
