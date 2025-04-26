@@ -1,51 +1,46 @@
-// src/App.jsx
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./firebase";          // ← already in your project
+import { auth } from "./firebase";
 
-const MAX_FREE_WORDS = 150;                 // adjust the cap here
+const MAX_FREE_WORDS = 150;
 
 export default function App() {
-  /* ───────── state ───────── */
-  const [user, setUser] = useState(null);   // logged-in user or null
-  const [notes, setNotes] = useState("");
-  const [summary, setSummary] = useState("");
+  const [user, setUser]           = useState(null);
+  const [notes, setNotes]         = useState("");
+  const [wordCount, setWordCount] = useState(0);
+  const [summary, setSummary]     = useState("");
   const [summaryLength, setSummaryLength] = useState("Medium");
-  const [warn, setWarn] = useState("");     // warning message
+  const [warn, setWarn]           = useState("");
 
-  /* ───── listen for auth changes ───── */
+  /* auth listener */
   useEffect(() => onAuthStateChanged(auth, setUser), []);
 
-  /* ───── helper: count words ───── */
   const countWords = (text) =>
     text.trim().split(/\s+/).filter(Boolean).length;
 
-  /* ───── textarea handler ───── */
   const handleNotesChange = (e) => {
     const text  = e.target.value;
     const words = countWords(text);
 
     if (!user && words > MAX_FREE_WORDS) {
       setWarn(`Free users are limited to ${MAX_FREE_WORDS} words.`);
-      return;                       // ignore extra input
+      return;
     }
     setWarn("");
+    setWordCount(words);
     setNotes(text);
   };
 
-  /* ───── clear button ───── */
   const handleClear = () => {
     setNotes("");
     setSummary("");
+    setWordCount(0);
     setWarn("");
   };
 
-  /* ───── form submit ───── */
   const generateSummary = async (e) => {
     e.preventDefault();
-
-    // final guard before hitting backend
-    if (!user && countWords(notes) > MAX_FREE_WORDS) {
+    if (!user && wordCount > MAX_FREE_WORDS) {
       setWarn(`Free users are limited to ${MAX_FREE_WORDS} words.`);
       return;
     }
@@ -70,7 +65,6 @@ export default function App() {
     }
   };
 
-  /* ───── UI (identical to your original) ───── */
   return (
     <>
       {/* Animated Background Blob */}
@@ -123,9 +117,18 @@ export default function App() {
             placeholder="Paste notes here..."
             required
           />
-          {warn && (
-            <p className="mt-1 text-xs text-red-400">{warn}</p>
-          )}
+          {/* live word counter */}
+          <div className="flex justify-between mt-1 text-xs">
+            {warn ? (
+              <span className="text-red-400">{warn}</span>
+            ) : (
+              <span className="text-gray-400">
+                {user
+                  ? `${wordCount} words`
+                  : `${wordCount}/${MAX_FREE_WORDS} words`}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
