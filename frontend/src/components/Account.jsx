@@ -12,13 +12,21 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Link } from "react-router-dom";
 
 export default function Account() {
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState("Account Info");
+  const [user, setUser]              = useState(null);
+  const [activeTab, setActiveTab]    = useState("Account Info");
+
   const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [photoURL, setPhotoURL] = useState("");
+  const [email, setEmail]             = useState("");
+
+  // password + privacy
+  const [newPassword, setNewPassword]       = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
+
+  // avatar handling
+  const [photoURL, setPhotoURL]         = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);   // local File
+  const [previewURL, setPreviewURL]     = useState("");     // object URL
+
   const [alert, setAlert] = useState({ type: "", msg: "" });
   const sidebarRef = useRef(null);
 
@@ -45,7 +53,7 @@ export default function Account() {
       await reauthenticateWithCredential(user, cred);
       return true;
     } catch {
-      flash("Re‑authentication failed. Check your password.", "error");
+      flash("Re-authentication failed. Check your password.", "error");
       return false;
     }
   };
@@ -60,12 +68,25 @@ export default function Account() {
     }
   };
 
-  const handleUpdatePhoto = async () => {
+  const handleUploadPhoto = async () => {
+    if (!selectedFile) return;
+    const storageRef = ref(
+      storage,
+      `profilePictures/${user.uid}/${Date.now()}-${selectedFile.name}`
+    );
+
     try {
-      await updateProfile(user, { photoURL });
+      await uploadBytes(storageRef, selectedFile);
+      const downloadURL = await getDownloadURL(storageRef);
+      await updateProfile(user, { photoURL: downloadURL });
+      await user.reload();
+      setUser({ ...auth.currentUser });
+      setPhotoURL(downloadURL);
+      setSelectedFile(null);
+      setPreviewURL("");
       flash("Profile photo updated ✔");
     } catch {
-      flash("Error updating profile photo", "error");
+      flash("Error uploading photo", "error");
     }
   };
 
@@ -90,23 +111,16 @@ export default function Account() {
       flash("Error updating password", "error");
     }
   };
-  const handlePhotoUpload = async (e) => {
+
+  /* ────────────────────── Avatar file-picker handler ───────────────── */
+  const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const storageRef = ref(storage, `profilePictures/${user.uid}`);
-
-    try {
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      await updateProfile(user, { photoURL: downloadURL });
-      setPhotoURL(downloadURL);
-      flash("Profile photo updated ✔");
-    } catch {
-      flash("Error uploading photo", "error");
-    }
+    setSelectedFile(file);
+    setPreviewURL(URL.createObjectURL(file));
   };
 
+  /* ───────────────────────────── Layout ─────────────────────────────── */
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-950 text-gray-400 text-lg">
@@ -115,7 +129,9 @@ export default function Account() {
     );
   }
 
-  /* ───────────────────────────── Layout ─────────────────────────────── */
+  const avatarSrc =
+    previewURL || photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`;
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black overflow-hidden">
       {/* ─── Sidebar */}
@@ -130,22 +146,19 @@ export default function Account() {
           Slate<span className="text-blue-500">Works</span>
         </Link>
 
-        {[
-          "Account Info",
-          "Account Settings",
-          "Privacy Settings",
-          "Billing",
-        ].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`mb-2 w-full text-left rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-gray-800/60 ${
-              activeTab === tab ? "bg-blue-600 text-white" : "text-gray-300"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
+        {["Account Info", "Account Settings", "Privacy Settings", "Billing"].map(
+          (tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`mb-2 w-full text-left rounded-lg px-4 py-2 transition-colors duration-200 hover:bg-gray-800/60 ${
+                activeTab === tab ? "bg-blue-600 text-white" : "text-gray-300"
+              }`}
+            >
+              {tab}
+            </button>
+          )
+        )}
 
         <div className="mt-auto pt-10 text-xs text-gray-500">
           <Link to="/" className="hover:text-gray-300">
@@ -180,23 +193,31 @@ export default function Account() {
               {/* Avatar */}
               <div className="flex gap-6 flex-col sm:flex-row items-start sm:items-center">
                 <img
-                  src={
-                    photoURL ||
-                    `https://api.dicebear.com/7.x/initials/svg?seed=${user.email}`
-                  }
+                  src={avatarSrc}
                   alt="Avatar"
                   className="h-24 w-24 rounded-full object-cover border-4 border-blue-500/60 shadow-lg"
                 />
                 <div className="flex flex-col gap-3">
                   <label className="block text-sm text-gray-400">
-                    Upload New Photo
+                    Choose New Photo
                   </label>
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handlePhotoUpload}
+                    onChange={handleFileSelect}
                     className="block text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 hover:file:bg-blue-700"
                   />
+                  <button
+                    onClick={handleUploadPhoto}
+                    disabled={!selectedFile}
+                    className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      selectedFile
+                        ? "bg-blue-600 hover:bg-blue-700"
+                        : "bg-gray-700 cursor-not-allowed"
+                    }`}
+                  >
+                    Update Photo
+                  </button>
                 </div>
               </div>
 
@@ -243,7 +264,7 @@ export default function Account() {
                 Account Settings
               </h1>
               <p className="text-gray-400">
-                Dark mode, 2‑factor auth, and notifications coming soon…
+                Dark mode, 2-factor auth, and notifications coming soon…
               </p>
             </section>
           )}
@@ -321,3 +342,4 @@ export default function Account() {
     </div>
   );
 }
+
