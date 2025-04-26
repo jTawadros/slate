@@ -7,6 +7,8 @@ import {
   EmailAuthProvider,
 } from "firebase/auth";
 import { auth } from "../firebase";
+import { storage } from "../firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Link } from "react-router-dom";
 
 export default function Account() {
@@ -88,6 +90,22 @@ export default function Account() {
       flash("Error updating password", "error");
     }
   };
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const storageRef = ref(storage, `profilePictures/${user.uid}`);
+
+    try {
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      await updateProfile(user, { photoURL: downloadURL });
+      setPhotoURL(downloadURL);
+      flash("Profile photo updated ✔");
+    } catch {
+      flash("Error uploading photo", "error");
+    }
+  };
 
   if (!user) {
     return (
@@ -105,7 +123,10 @@ export default function Account() {
         ref={sidebarRef}
         className="w-72 shrink-0 border-r border-gray-800/60 bg-gray-900/50 backdrop-blur-md text-gray-200 pt-8 pb-12 px-6 flex flex-col"
       >
-        <Link to="/" className="mb-10 text-2xl font-extrabold tracking-tight text-white">
+        <Link
+          to="/"
+          className="mb-10 text-2xl font-extrabold tracking-tight text-white"
+        >
           Slate<span className="text-blue-500">Works</span>
         </Link>
 
@@ -152,7 +173,9 @@ export default function Account() {
           {/* ─── Account Info */}
           {activeTab === "Account Info" && (
             <section className="space-y-8">
-              <h1 className="text-3xl font-semibold text-white mb-4">Account Information</h1>
+              <h1 className="text-3xl font-semibold text-white mb-4">
+                Account Information
+              </h1>
 
               {/* Avatar */}
               <div className="flex gap-6 flex-col sm:flex-row items-start sm:items-center">
@@ -164,28 +187,24 @@ export default function Account() {
                   alt="Avatar"
                   className="h-24 w-24 rounded-full object-cover border-4 border-blue-500/60 shadow-lg"
                 />
-                <div className="flex-1 space-y-3">
-                  <label className="block text-sm text-gray-400">Profile Photo URL</label>
-                  <div className="flex gap-3">
-                    <input
-                      type="url"
-                      value={photoURL}
-                      onChange={(e) => setPhotoURL(e.target.value)}
-                      className="flex-1 rounded-lg bg-gray-800/60 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 border border-gray-700/50"
-                    />
-                    <button
-                      onClick={handleUpdatePhoto}
-                      className="rounded-lg bg-blue-600 hover:bg-blue-700 px-4 py-2 text-sm font-medium"
-                    >
-                      Update
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-3">
+                  <label className="block text-sm text-gray-400">
+                    Upload New Photo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="block text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 hover:file:bg-blue-700"
+                  />
                 </div>
               </div>
 
               {/* Display name */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Display Name</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Display Name
+                </label>
                 <div className="flex gap-3">
                   <input
                     type="text"
@@ -204,7 +223,9 @@ export default function Account() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Email Address</label>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   value={email}
@@ -218,24 +239,33 @@ export default function Account() {
           {/* ─── Account Settings */}
           {activeTab === "Account Settings" && (
             <section>
-              <h1 className="text-3xl font-semibold text-white mb-4">Account Settings</h1>
-              <p className="text-gray-400">Dark mode, 2‑factor auth, and notifications coming soon…</p>
+              <h1 className="text-3xl font-semibold text-white mb-4">
+                Account Settings
+              </h1>
+              <p className="text-gray-400">
+                Dark mode, 2‑factor auth, and notifications coming soon…
+              </p>
             </section>
           )}
 
           {/* ─── Privacy Settings */}
           {activeTab === "Privacy Settings" && (
             <section className="space-y-6">
-              <h1 className="text-3xl font-semibold text-white mb-4">Privacy Settings</h1>
+              <h1 className="text-3xl font-semibold text-white mb-4">
+                Privacy Settings
+              </h1>
 
               <p className="text-sm text-amber-300 mb-4">
-                🔒 Enter your current password, set a new one, then click <em>Update Password</em>.
+                🔒 Enter your current password, set a new one, then click{" "}
+                <em>Update Password</em>.
               </p>
 
               <div className="grid gap-5 max-w-xs">
                 {/* Current password */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Current Password</label>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    Current Password
+                  </label>
                   <input
                     type="password"
                     placeholder="Current password"
@@ -247,7 +277,9 @@ export default function Account() {
 
                 {/* New password */}
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">New Password</label>
+                  <label className="block text-sm text-gray-400 mb-1">
+                    New Password
+                  </label>
                   <input
                     type="password"
                     placeholder="New password"
@@ -278,7 +310,9 @@ export default function Account() {
           {/* ─── Billing */}
           {activeTab === "Billing" && (
             <section>
-              <h1 className="text-3xl font-semibold text-white mb-4">Billing</h1>
+              <h1 className="text-3xl font-semibold text-white mb-4">
+                Billing
+              </h1>
               <p className="text-gray-400">Stripe integration coming soon.</p>
             </section>
           )}
@@ -287,4 +321,3 @@ export default function Account() {
     </div>
   );
 }
-
