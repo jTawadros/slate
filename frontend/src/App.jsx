@@ -1,16 +1,76 @@
 // src/App.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";          // ← already in your project
+
+const MAX_FREE_WORDS = 150;                 // adjust the cap here
 
 export default function App() {
+  /* ───────── state ───────── */
+  const [user, setUser] = useState(null);   // logged-in user or null
   const [notes, setNotes] = useState("");
   const [summary, setSummary] = useState("");
   const [summaryLength, setSummaryLength] = useState("Medium");
+  const [warn, setWarn] = useState("");     // warning message
 
+  /* ───── listen for auth changes ───── */
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
+
+  /* ───── helper: count words ───── */
+  const countWords = (text) =>
+    text.trim().split(/\s+/).filter(Boolean).length;
+
+  /* ───── textarea handler ───── */
+  const handleNotesChange = (e) => {
+    const text  = e.target.value;
+    const words = countWords(text);
+
+    if (!user && words > MAX_FREE_WORDS) {
+      setWarn(`Free users are limited to ${MAX_FREE_WORDS} words.`);
+      return;                       // ignore extra input
+    }
+    setWarn("");
+    setNotes(text);
+  };
+
+  /* ───── clear button ───── */
   const handleClear = () => {
     setNotes("");
     setSummary("");
+    setWarn("");
   };
 
+  /* ───── form submit ───── */
+  const generateSummary = async (e) => {
+    e.preventDefault();
+
+    // final guard before hitting backend
+    if (!user && countWords(notes) > MAX_FREE_WORDS) {
+      setWarn(`Free users are limited to ${MAX_FREE_WORDS} words.`);
+      return;
+    }
+
+    setSummary("Generating...");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          notes,
+          report_type: "General Summary",
+          summary_length: summaryLength,
+          uid: user?.uid ?? null,
+        }),
+      });
+      const data = await res.json();
+      setSummary(data.summary);
+    } catch (err) {
+      console.error(err);
+      setSummary("Error generating summary.");
+    }
+  };
+
+  /* ───── UI (identical to your original) ───── */
   return (
     <>
       {/* Animated Background Blob */}
@@ -51,42 +111,21 @@ export default function App() {
 
       {/* Form Section */}
       <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setSummary("Generating...");
-
-          try {
-            const res = await fetch(
-              `${import.meta.env.VITE_API_URL}/api/generate`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  notes,
-                  report_type: "General Summary",
-                  summary_length: summaryLength,
-                }),
-              }
-            );
-
-            const data = await res.json();
-            setSummary(data.summary);
-          } catch (err) {
-            console.error(err);
-            setSummary("Error generating summary.");
-          }
-        }}
+        onSubmit={generateSummary}
         className="relative z-10 bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700 space-y-4"
       >
         <div>
           <label className="block text-sm font-semibold mb-1">Notes</label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={handleNotesChange}
             className="w-full h-32 p-3 rounded-md bg-gray-900 border border-gray-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             placeholder="Paste notes here..."
             required
           />
+          {warn && (
+            <p className="mt-1 text-xs text-red-400">{warn}</p>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-2">
