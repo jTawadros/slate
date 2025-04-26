@@ -6,6 +6,7 @@ import App from "./App";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Account from "./components/Account";
+import Membership from "./components/Membership";
 import { Toaster } from "react-hot-toast";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
